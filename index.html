@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AniHub - Anime & Manga Curation Suite</title>
+    <meta name="description" content="AniHub is an all-in-one anime and manga curation platform combining linear list ranking with customizable multi-tier tier lists.">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Custom Unified Styles -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'bg': 'var(--bg)',
+                        'surface': 'var(--surface)',
+                        'surface-hover': 'var(--surface-hover)',
+                        'surface-active': 'var(--surface-active)',
+                        'border': 'var(--border)',
+                        'border-muted': 'var(--border-muted)',
+                        'text-primary': 'var(--text-primary)',
+                        'text-muted': 'var(--text-muted)',
+                        'accent': 'var(--accent)',
+                        'accent-hover': 'var(--accent-hover)',
+                        'accent-fg': 'var(--accent-fg)',
+
+                        // Backward compatibility aliases
+                        'page-bg': 'var(--bg)',
+                        'card-bg': 'var(--surface)',
+                        'dark-bg': 'var(--bg)',
+                        'dark-card': 'var(--surface)',
+                        'primary': 'var(--accent)',
+                        'primary-hover': 'var(--accent-hover)',
+                        'secondary': 'var(--text-muted)',
+                    },
+                    fontFamily: {
+                        'sans': ['"Inter"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                        'mono': ['"JetBrains Mono"', 'monospace'],
+                        'display': ['"Inter"', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        'sm': '4px',
+                        'DEFAULT': '6px',
+                        'md': '6px',
+                        'lg': '8px',
+                        'xl': '8px',
+                        '2xl': '8px',
+                        '3xl': '8px',
+                    },
+                    boxShadow: {
+                        'elevated': '0 4px 20px -2px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--border)',
+                        'dropdown': '0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--border)',
+                        'soft': 'none',
+                        'hover': 'none',
+                        'glass': 'none',
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+
+<body class="bg-bg text-text-primary font-sans min-h-screen transition-colors duration-150 flex flex-col relative antialiased selection:bg-accent selection:text-accent-fg">
+
+    <!-- Universal Header Mount Point -->
+    <div id="app-navbar" class="relative z-50"></div>
+
+    <!-- Main Content Mount Point -->
+    <main id="app-main" class="flex-1 relative z-10 w-full"></main>
+
+    <!-- Global Toast Container -->
+    <div id="toast-container" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 pointer-events-none items-center w-full max-w-md px-4"></div>
+
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- Application Scripts -->
+    <script src="js/state.js"></script>
+    <script src="js/toast.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/components/navbar.js"></script>
+    <script src="js/components/discovery.js"></script>
+    <script src="js/components/tier-settings.js"></script>
+    <script src="js/components/export-modal.js"></script>
+    <script src="js/views/landing.js"></script>
+    <script src="js/views/ranker.js"></script>
+    <script src="js/views/tierlist.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

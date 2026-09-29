@@ -1,0 +1,400 @@
+/* AniHub - Precision Studio Stylesheet (Anti-AI Slop Refactor) */
+
+:root {
+    /* Dark Theme (Default Studio Palette) */
+    --bg: #0b1622;
+    --surface: #151f2e;
+    --surface-hover: #1f2d40;
+    --surface-active: #27374d;
+    --border: #223147;
+    --border-muted: #1c283a;
+    --text-primary: #edf1f5;
+    --text-muted: #8ba0b2;
+    --accent: #3db4f2;
+    --accent-hover: #2ba2e0;
+    --accent-fg: #ffffff;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+}
+
+
+/* Scoped Fast Transitions (Purged universal '*' transition rule for zero input/drag latency) */
+a, button, input, select, textarea, .interactive-item {
+    transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;
+}
+
+/* Custom Precision Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.15s ease-out forwards;
+}
+
+/* Solid Studio Panel (Replaces fuzzy glassmorphism) */
+.glass-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
+/* Dropzone Drag-Over Highlight */
+.dropzone-active {
+    border-color: var(--accent) !important;
+    background-color: rgba(61, 180, 242, 0.08) !important;
+    outline: 1px solid var(--accent);
+}
+
+/* Drag and Drop Visuals - Ranker */
+.ranked-item.dragging {
+    opacity: 0.9;
+    background-color: var(--surface-active);
+    border: 1px solid var(--accent);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    z-index: 50;
+    cursor: grabbing;
+}
+
+.ranked-item.drag-over-top {
+    border-top: 2px solid var(--accent) !important;
+}
+
+.ranked-item.drag-over-bottom {
+    border-bottom: 2px solid var(--accent) !important;
+}
+
+.ranked-item.touch-dragging {
+    touch-action: none;
+}
+
+.drag-avatar {
+    position: fixed;
+    pointer-events: none;
+    z-index: 10000;
+    opacity: 0.95;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.5);
+    transform: scale(1.04);
+    transition: none;
+    border-radius: 6px;
+    border: 1px solid var(--accent);
+}
+
+.drag-placeholder {
+    opacity: 0.25 !important;
+    border: 1px dashed var(--accent) !important;
+    filter: grayscale(100%);
+}
+
+/* Ranking Grid Showcase */
+.ranking-grid-tile {
+    position: relative;
+    aspect-ratio: 2 / 3;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.ranking-grid-tile:active {
+    cursor: grabbing;
+}
+
+.ranking-grid-tile.grid-dragging {
+    opacity: 0.35;
+    transform: scale(0.96);
+    filter: grayscale(80%);
+}
+
+.ranking-grid-tile.grid-drag-over {
+    outline: 2px solid var(--accent) !important;
+    outline-offset: 1px;
+    z-index: 30;
+    box-shadow: none !important;
+}
+
+.ranking-grid-tile:hover {
+    border-color: var(--text-muted);
+    transform: translateY(-2px);
+}
+
+.ranking-grid-tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.ranking-grid-tile .rank-number {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    min-width: 22px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 4px;
+    background: rgba(11, 22, 34, 0.9);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hide-ranks .rank-number {
+    display: none !important;
+}
+
+.hide-titles .grid-title-overlay,
+.hide-titles .tier-card-title {
+    display: none !important;
+}
+
+/* Tier Drag Highlight */
+.box.tier-drag-hover {
+    border-color: var(--accent) !important;
+    background-color: rgba(61, 180, 242, 0.08) !important;
+}
+
+.pool-container.tier-drag-hover {
+    border-color: var(--accent) !important;
+    background-color: rgba(61, 180, 242, 0.06) !important;
+}
+
+/* Tier List Visuals */
+.box {
+    display: flex;
+    min-height: 88px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: border-color 0.15s ease;
+}
+
+.box:hover {
+    border-color: var(--border);
+}
+
+.box .name {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 68px;
+    flex-shrink: 0;
+    color: #111625;
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    text-align: center;
+    padding: 0 6px;
+    word-break: break-word;
+    line-height: 1.2;
+    user-select: none;
+}
+
+.box .items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px;
+    width: 100%;
+    align-items: center;
+    background: var(--bg);
+}
+
+/* Album / Card items in Tierlist */
+.album {
+    width: 64px;
+    height: 96px;
+    aspect-ratio: 2 / 3;
+    cursor: grab;
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: transform 0.15s ease, border-color 0.15s ease;
+    background: var(--surface);
+    touch-action: none;
+    flex-shrink: 0;
+}
+
+.album:hover {
+    transform: translateY(-2px);
+    border-color: var(--text-muted);
+    z-index: 10;
+}
+
+.album img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.album:active {
+    cursor: grabbing;
+}
+
+.album.dragging {
+    opacity: 0.45;
+    filter: grayscale(100%);
+}
+
+.album .album-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(11, 22, 34, 0.75);
+    opacity: 0;
+    transition: opacity 0.15s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 4px;
+}
+
+.album:hover .album-overlay {
+    opacity: 1;
+}
+
+/* Search Result Cards */
+.search-result-card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+    cursor: pointer;
+}
+
+.search-result-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+}
+
+.search-result-card img {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+}
+
+/* Tier Setting Row */
+.tier-setting-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 640px) {
+    body {
+        overflow-x: hidden;
+    }
+
+    button {
+        max-width: 100%;
+    }
+}
+
+/* Solid Rank Badges (High Contrast, No Rainbow Gradient) */
+.rank-badge-gold {
+    background: #f59e0b;
+    color: #000000;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.rank-badge-silver {
+    background: #94a3b8;
+    color: #000000;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.rank-badge-bronze {
+    background: #d97706;
+    color: #ffffff;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Discovery Engine Styles */
+.result-item-card {
+    transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.result-item-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+}
+
+.discovery-tab-btn {
+    outline: none;
+}
+
+#ranker-export-canvas {
+    border-color: var(--border) !important;
+}
+
+#ranker-export-canvas .showcase-header {
+    border-bottom-color: var(--border) !important;
+}
+
+.dest-toggle-btn {
+    outline: none;
+}
+
+/* Export Studio & Watermark Styles */
+.anihub-render-watermark {
+    border: 1px solid var(--border);
+    letter-spacing: 0.025em;
+}
+
+#anihub-export-modal .modal-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+}
