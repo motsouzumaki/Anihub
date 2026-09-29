@@ -159,22 +159,12 @@ window.AniHub.components = window.AniHub.components || {};
                             
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                                 <!-- Resolution Scale -->
-                                <div>
+                                <div class="sm:col-span-2">
                                     <label class="block text-text-muted font-medium mb-1">Render Quality / Scale</label>
                                     <select id="export-png-scale" class="w-full h-8 px-2.5 rounded-md bg-surface border border-border text-text-primary font-mono text-xs focus:outline-none focus:border-accent">
                                         <option value="1">Standard (1x - Fast)</option>
                                         <option value="2" selected>Retina High-Res (2x - Recommended)</option>
                                         <option value="3">Studio Ultra HD (3x - Print Quality)</option>
-                                    </select>
-                                </div>
-
-                                <!-- Background Color -->
-                                <div>
-                                    <label class="block text-text-muted font-medium mb-1">Canvas Background Theme</label>
-                                    <select id="export-png-bg" class="w-full h-8 px-2.5 rounded-md bg-surface border border-border text-text-primary font-mono text-xs focus:outline-none focus:border-accent">
-                                        <option value="slate" selected>Deep Obsidian (#0b1622)</option>
-                                        <option value="light">Clean Light (#ffffff)</option>
-                                        <option value="theme">Current App Theme</option>
                                     </select>
                                 </div>
                             </div>
@@ -207,7 +197,7 @@ window.AniHub.components = window.AniHub.components || {};
 
                         <!-- Action Buttons -->
                         <div class="flex flex-wrap items-center gap-2 pt-1">
-                            <button id="btn-export-download-png" class="flex-1 h-9 px-4 rounded-md bg-accent hover:bg-accent-hover text-accent-fg font-semibold text-xs transition-colors flex items-center justify-center gap-2">
+                            <button id="btn-export-download-png" class="flex-1 h-9 px-4 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-2 shadow-xs">
                                 <i class="fas fa-download text-xs"></i>
                                 <span>Download PNG Graphic</span>
                             </button>
@@ -770,15 +760,19 @@ window.AniHub.components = window.AniHub.components || {};
                 let md = `# AniRanker Rankings\n*Exported on ${today} • ${items.length} titles*\n\n`;
                 items.forEach((item, idx) => {
                     const title = item.title || item.name || 'Untitled';
-                    const fmt = item.format ? ` [${item.format}]` : '';
+                    const seriesOrFmt = (item.type === 'CHARACTER' && item.seriesTitle) 
+                        ? item.seriesTitle 
+                        : item.format;
+                    const fmt = seriesOrFmt ? ` [${seriesOrFmt}]` : '';
                     md += `${idx + 1}. **${title}**${fmt}\n`;
                 });
                 return md;
             } else if (format === 'csv') {
-                let csv = `Rank,Title,Type,AniList ID\n`;
+                let csv = `Rank,Title,Type / Series,AniList ID\n`;
                 items.forEach((item, idx) => {
                     const title = `"${(item.title || item.name || 'Untitled').replace(/"/g, '""')}"`;
-                    csv += `${idx + 1},${title},${item.format || item.type || 'MEDIA'},${item.id || ''}\n`;
+                    const typeOrSeries = `"${((item.type === 'CHARACTER' && item.seriesTitle) ? item.seriesTitle : (item.format || item.type || 'MEDIA')).replace(/"/g, '""')}"`;
+                    csv += `${idx + 1},${title},${typeOrSeries},${item.id || ''}\n`;
                 });
                 return csv;
             } else {
@@ -788,7 +782,10 @@ window.AniHub.components = window.AniHub.components || {};
                 text += `====================================\n\n`;
                 items.forEach((item, idx) => {
                     const title = item.title || item.name || 'Untitled';
-                    const fmt = item.format ? ` (${item.format})` : '';
+                    const seriesOrFmt = (item.type === 'CHARACTER' && item.seriesTitle) 
+                        ? item.seriesTitle 
+                        : item.format;
+                    const fmt = seriesOrFmt ? ` (${seriesOrFmt})` : '';
                     text += `${(idx + 1).toString().padStart(2, ' ')}. ${title}${fmt}\n`;
                 });
                 return text;
@@ -1187,11 +1184,72 @@ window.AniHub.components = window.AniHub.components || {};
         }
     }
 
+    // Direct headless PNG download without opening modal
+    async function directDownloadPng(context = 'ranker', customTarget = null, filename = null) {
+        let targetEl = customTarget;
+        if (!targetEl) {
+            if (context === 'ranker') {
+                targetEl = document.getElementById('ranker-export-canvas') || document.querySelector('#ranker-grid-panel');
+            } else {
+                targetEl = document.getElementById('tierlist-capture-area');
+            }
+        }
+
+        if (!targetEl) {
+            if (window.AniHub.toast) window.AniHub.toast.error('Visual capture target not found.');
+            return;
+        }
+
+        if (typeof html2canvas === 'undefined') {
+            if (window.AniHub.toast) window.AniHub.toast.error('html2canvas rendering library not loaded.');
+            return;
+        }
+
+        const filenamePrefix = (filename || `anihub-${context}`).trim();
+        const toastId = window.AniHub.toast ? window.AniHub.toast.info('Synthesizing PNG graphic, please wait...') : null;
+
+        const originalSources = [];
+        try {
+            const imgEls = targetEl.querySelectorAll('img');
+            for (let i = 0; i < imgEls.length; i++) {
+                const img = imgEls[i];
+                originalSources.push({ img, src: img.src });
+                const dataUrl = await convertImageToDataURL(img.src);
+                if (dataUrl) img.src = dataUrl;
+            }
+
+            await new Promise(r => setTimeout(r, 120));
+
+            const canvas = await html2canvas(targetEl, {
+                backgroundColor: '#0b1622',
+                scale: 2,
+                useCORS: true,
+                allowTaint: false,
+                logging: false
+            });
+
+            const link = document.createElement('a');
+            link.download = `${filenamePrefix}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+
+            if (window.AniHub.toast) window.AniHub.toast.success(`Downloaded ${filenamePrefix}.png!`);
+        } catch (err) {
+            console.error('Direct PNG download error:', err);
+            if (window.AniHub.toast) window.AniHub.toast.error('Failed to generate PNG.');
+        } finally {
+            originalSources.forEach(({ img, src }) => {
+                img.src = src;
+            });
+        }
+    }
+
     // Export API
     window.AniHub.components.exportModal = {
         open: openModal,
         close: closeModal,
         switchTab: switchTab,
+        directDownloadPng: directDownloadPng,
         convertImageToDataURL: convertImageToDataURL,
         checkIncomingShareLink: checkIncomingShareLink
     };

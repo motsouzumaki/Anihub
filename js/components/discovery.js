@@ -802,7 +802,9 @@ window.AniHub.components = window.AniHub.components || {};
                     <div class="p-2 flex-1 flex flex-col justify-between">
                         <h4 class="text-xs font-medium text-text-primary truncate" title="${item.title}">${item.title}</h4>
                         <div class="mt-1 flex items-center justify-between font-mono text-[10px] text-text-muted">
-                            <span class="truncate">${item.format || item.type}</span>
+                            <span class="truncate" title="${(item.type === 'CHARACTER' && item.seriesTitle) ? item.seriesTitle : (item.format || item.type || '')}">
+                                ${(item.type === 'CHARACTER' && item.seriesTitle) ? item.seriesTitle : (item.format || item.type || '')}
+                            </span>
                             ${item.year ? `<span>${item.year}</span>` : (item.gender ? `<span>${item.gender}</span>` : '')}
                         </div>
                     </div>

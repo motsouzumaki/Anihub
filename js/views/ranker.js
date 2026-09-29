@@ -93,74 +93,16 @@ window.AniHub.views = window.AniHub.views || {};
         const state = window.AniHub.state;
 
         container.innerHTML = `
-            <div class="py-6 max-w-7xl mx-auto px-4 md:px-6 space-y-6 animate-fade-in">
-                <!-- Top Toolbar -->
-                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-surface px-4 py-3.5 rounded-lg border border-border">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-md bg-bg border border-border text-accent flex items-center justify-center text-xs shrink-0">
-                            <i class="fas fa-th-large"></i>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <h1 class="text-base sm:text-lg font-bold text-text-primary tracking-tight">AniRanker Workspace</h1>
-                                <span id="ranker-count-badge" class="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-bg border border-border text-accent">
-                                    0 Entries
-                                </span>
-                            </div>
-                            <p class="text-xs text-text-muted">Interactive Linear Hierarchy & Grid Showcase</p>
-                        </div>
-                    </div>
-
-                    <!-- Mode Toggle & Quick Actions -->
-                    <div class="flex flex-wrap items-center gap-2">
-                        <!-- View Mode Switcher -->
-                        <div class="flex items-center p-0.5 rounded-md bg-bg border border-border text-xs">
-                            <button id="btn-tab-grid" class="h-7 px-3 rounded-md transition-colors flex items-center gap-1.5 ${activeTab === 'grid' ? 'bg-surface text-text-primary border border-border font-semibold' : 'text-text-muted hover:text-text-primary'}">
-                                <i class="fas fa-th-large text-xs"></i>
-                                <span>Grid View</span>
-                            </button>
-                            <button id="btn-tab-list" class="h-7 px-3 rounded-md transition-colors flex items-center gap-1.5 ${activeTab === 'list' ? 'bg-surface text-text-primary border border-border font-semibold' : 'text-text-muted hover:text-text-primary'}">
-                                <i class="fas fa-bars text-xs"></i>
-                                <span>Matrix List</span>
-                            </button>
-                        </div>
-
-                        <!-- Utility Buttons -->
-                        <div class="flex items-center gap-1.5">
-                            <button id="btn-ranker-reverse" class="h-8 w-8 rounded-md bg-surface hover:bg-surface-hover border border-border text-text-muted hover:text-text-primary text-xs flex items-center justify-center transition-colors" title="Reverse Ranking Order">
-                                <i class="fas fa-sort-numeric-down-alt"></i>
-                            </button>
-                            <button id="btn-ranker-shuffle" class="h-8 w-8 rounded-md bg-surface hover:bg-surface-hover border border-border text-text-muted hover:text-text-primary text-xs flex items-center justify-center transition-colors" title="Shuffle Randomly">
-                                <i class="fas fa-random"></i>
-                            </button>
-                            <button id="btn-ranker-copy-text" class="h-8 w-8 rounded-md bg-surface hover:bg-surface-hover border border-border text-text-muted hover:text-text-primary text-xs flex items-center justify-center transition-colors" title="Copy Text List to Clipboard">
-                                <i class="fas fa-copy"></i>
-                            </button>
-                            <button id="btn-open-ranker-export" class="h-8 px-3 rounded-md bg-accent hover:bg-accent-hover text-accent-fg text-xs font-semibold transition-colors flex items-center gap-1.5" title="Export PNG, Text, JSON Backup & Share Link">
-                                <i class="fas fa-file-export text-xs"></i>
-                                <span>Export</span>
-                            </button>
-                            <button id="btn-clear-ranker" class="h-8 px-2.5 rounded-md bg-surface hover:bg-surface-hover border border-border text-text-muted hover:text-rose-400 text-xs font-medium transition-colors flex items-center gap-1.5">
-                                <i class="fas fa-trash-alt text-[10px]"></i>
-                                <span>Clear</span>
-                            </button>
-                            <a href="#/tierlist" class="h-8 px-3 rounded-md bg-surface hover:bg-surface-hover border border-border text-text-primary text-xs font-medium transition-colors flex items-center gap-1.5">
-                                <i class="fas fa-th text-xs text-text-muted"></i>
-                                <span class="hidden sm:inline">AniTierlist</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Grid Showcase View Panel (DEFAULT) -->
-                <div id="ranker-grid-panel" class="${activeTab === 'grid' ? '' : 'hidden'} space-y-4">
-                    <!-- Grid Showcase Controls Bar -->
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-lg bg-surface border border-border text-xs">
+            <div class="py-6 max-w-7xl mx-auto px-4 md:px-6 space-y-4 animate-fade-in">
+                <!-- Controls & Action Toolbar -->
+                <div class="space-y-3">
+                    <div class="p-3.5 rounded-lg bg-surface border border-border text-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <!-- Left: Display Config (Columns, Show Ranks, Show Titles) -->
                         <div class="flex flex-wrap items-center gap-4 font-medium text-text-muted">
                             <!-- Columns selector -->
                             <div class="flex items-center gap-2">
                                 <span>Columns:</span>
-                                <select id="grid-cols-select" class="h-7 px-2 rounded-md bg-bg border border-border text-text-primary text-xs font-mono focus:outline-none focus:border-accent">
+                                <select id="grid-cols-select" class="h-8 px-2 rounded-md bg-bg border border-border text-text-primary text-xs font-mono focus:outline-none focus:border-accent">
                                     <option value="3" ${gridCols === 3 ? 'selected' : ''}>3 cols</option>
                                     <option value="4" ${gridCols === 4 ? 'selected' : ''}>4 cols</option>
                                     <option value="5" ${gridCols === 5 ? 'selected' : ''}>5 cols</option>
@@ -180,35 +122,60 @@ window.AniHub.views = window.AniHub.views || {};
                                 <input type="checkbox" id="toggle-grid-titles" ${showTitles ? 'checked' : ''} class="rounded border-border text-accent focus:ring-0">
                                 <span>Show Titles</span>
                             </label>
+                        </div>
 
-                            <span class="text-[11px] text-text-muted">
-                                <i class="fas fa-arrows-alt mr-1"></i>Drag cards in grid to reorder
+                        <!-- Middle: Entries Counter Badge -->
+                        <div class="flex items-center justify-center">
+                            <span id="ranker-count-badge" class="font-mono text-xs font-semibold px-3 py-1 rounded-md bg-bg border border-border text-accent shadow-xs">
+                                0 Entries
                             </span>
                         </div>
 
-                        <!-- Action Buttons -->
-                        <div class="flex items-center gap-2">
-                            <button id="btn-download-grid-png" class="h-8 px-3.5 rounded-md bg-accent hover:bg-accent-hover text-accent-fg text-xs font-semibold transition-colors flex items-center gap-2">
+                        <!-- Right: Action Buttons & Save PNG Toolbar -->
+                        <div class="flex flex-wrap items-center gap-2 justify-end">
+                            <button id="btn-ranker-reverse" class="h-8 w-8 rounded-md bg-surface hover:bg-surface-hover border border-border text-text-muted hover:text-text-primary text-xs flex items-center justify-center transition-colors" title="Reverse Ranking Order">
+                                <i class="fas fa-sort-numeric-down-alt"></i>
+                            </button>
+                            <button id="btn-ranker-shuffle" class="h-8 w-8 rounded-md bg-surface hover:bg-surface-hover border border-border text-text-muted hover:text-text-primary text-xs flex items-center justify-center transition-colors" title="Shuffle Randomly">
+                                <i class="fas fa-random"></i>
+                            </button>
+                            <button id="btn-open-ranker-export" class="h-8 px-3 rounded-md bg-accent hover:bg-accent-hover text-accent-fg text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs" title="Export PNG, Text, JSON Backup & Share Link">
+                                <i class="fas fa-file-export text-xs"></i>
+                                <span>Export</span>
+                            </button>
+                            <!-- Clear Button with Strong Red Background and Prominent Label -->
+                            <button id="btn-clear-ranker" class="h-8 px-3 rounded-md bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs" title="Clear all rankings">
+                                <i class="fas fa-trash-alt text-xs"></i>
+                                <span>Clear</span>
+                            </button>
+                            <button id="btn-download-grid-png" class="h-8 px-3.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-colors flex items-center gap-2 shadow-xs">
                                 <i class="fas fa-download text-xs"></i>
                                 <span>Save PNG</span>
                             </button>
                         </div>
                     </div>
 
+                    <!-- Row Directly Underneath: Grid View / List View Switcher in the Middle & Longer -->
+                    <div class="flex justify-center">
+                        <div class="inline-flex items-center p-1 rounded-lg bg-surface border border-border shadow-xs">
+                            <button id="btn-tab-grid" class="h-9 px-6 sm:px-8 min-w-[130px] rounded-md text-xs sm:text-sm transition-all flex items-center justify-center gap-2 ${activeTab === 'grid' ? 'bg-bg text-text-primary border border-border font-bold shadow-xs' : 'text-text-muted hover:text-text-primary font-medium'}">
+                                <i class="fas fa-th-large text-xs sm:text-sm"></i>
+                                <span>Grid View</span>
+                            </button>
+                            <button id="btn-tab-list" class="h-9 px-6 sm:px-8 min-w-[130px] rounded-md text-xs sm:text-sm transition-all flex items-center justify-center gap-2 ${activeTab === 'list' ? 'bg-bg text-text-primary border border-border font-bold shadow-xs' : 'text-text-muted hover:text-text-primary font-medium'}">
+                                <i class="fas fa-bars text-xs sm:text-sm"></i>
+                                <span>List View</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grid Showcase View Panel (DEFAULT) -->
+                <div id="ranker-grid-panel" class="${activeTab === 'grid' ? '' : 'hidden'} space-y-4">
+
                     <!-- Canvas/Grid Showcase Container -->
                     <div class="p-4 sm:p-6 rounded-lg bg-bg border border-border overflow-hidden">
                         <div id="ranker-export-canvas" class="p-6 rounded-md bg-[#090d16] text-white border border-border transition-all">
-                            <!-- Showcase Header -->
-                            <div class="showcase-header flex items-center justify-between pb-3 mb-4 border-b border-border">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-6 h-6 rounded-md bg-accent text-accent-fg flex items-center justify-center text-xs font-bold">
-                                        <i class="fas fa-layer-group text-[10px]"></i>
-                                    </div>
-                                    <span class="font-bold text-sm tracking-wide text-white">AniRanker Showcase</span>
-                                </div>
-                                <span class="font-mono text-xs text-text-muted" id="grid-export-date"></span>
-                            </div>
-
                             <!-- Responsive Grid Tiles -->
                             <div id="ranker-tiles-container" class="grid gap-3 ${showRanks ? '' : 'hide-ranks'} ${showTitles ? '' : 'hide-titles'}">
                                 <!-- Tiles injected here -->
@@ -264,13 +231,13 @@ window.AniHub.views = window.AniHub.views || {};
         function setTab(tab) {
             activeTab = tab;
             if (tab === 'grid') {
-                btnTabGrid.className = 'px-3.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 bg-white dark:bg-slate-700 text-primary shadow-xs font-bold';
-                btnTabList.className = 'px-3.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400';
+                btnTabGrid.className = 'h-9 px-6 sm:px-8 min-w-[130px] rounded-md text-xs sm:text-sm transition-all flex items-center justify-center gap-2 bg-bg text-text-primary border border-border font-bold shadow-xs';
+                btnTabList.className = 'h-9 px-6 sm:px-8 min-w-[130px] rounded-md text-xs sm:text-sm transition-all flex items-center justify-center gap-2 text-text-muted hover:text-text-primary font-medium';
                 panelGrid.classList.remove('hidden');
                 panelList.classList.add('hidden');
             } else {
-                btnTabList.className = 'px-3.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 bg-white dark:bg-slate-700 text-primary shadow-xs font-bold';
-                btnTabGrid.className = 'px-3.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400';
+                btnTabList.className = 'h-9 px-6 sm:px-8 min-w-[130px] rounded-md text-xs sm:text-sm transition-all flex items-center justify-center gap-2 bg-bg text-text-primary border border-border font-bold shadow-xs';
+                btnTabGrid.className = 'h-9 px-6 sm:px-8 min-w-[130px] rounded-md text-xs sm:text-sm transition-all flex items-center justify-center gap-2 text-text-muted hover:text-text-primary font-medium';
                 panelList.classList.remove('hidden');
                 panelGrid.classList.add('hidden');
             }
@@ -335,20 +302,6 @@ window.AniHub.views = window.AniHub.views || {};
             if (window.AniHub.toast) window.AniHub.toast.info('Ranking shuffled');
         });
 
-        container.querySelector('#btn-ranker-copy-text').addEventListener('click', () => {
-            const items = state.rankerItems || [];
-            if (items.length === 0) {
-                if (window.AniHub.toast) window.AniHub.toast.warning('Ranking is empty');
-                return;
-            }
-            const text = items.map((item, i) => `${i + 1}. ${item.title} (${item.format || 'Anime'})`).join('\n');
-            navigator.clipboard.writeText(text).then(() => {
-                if (window.AniHub.toast) window.AniHub.toast.success('Ranking copied to clipboard!');
-            }).catch(() => {
-                if (window.AniHub.toast) window.AniHub.toast.error('Failed to copy to clipboard');
-            });
-        });
-
         container.querySelector('#btn-clear-ranker').addEventListener('click', () => {
             const items = state.rankerItems || [];
             if (items.length === 0) return;
@@ -372,11 +325,13 @@ window.AniHub.views = window.AniHub.views || {};
             });
         }
 
-        // High-Quality PNG Export via Unified Export Modal
+        // Direct High-Quality PNG Download without opening modal window
         const downloadPngBtn = container.querySelector('#btn-download-grid-png');
         if (downloadPngBtn) {
             downloadPngBtn.addEventListener('click', () => {
-                if (window.AniHub.exportModal) {
+                if (window.AniHub.exportModal?.directDownloadPng) {
+                    window.AniHub.exportModal.directDownloadPng('ranker', container.querySelector('#ranker-export-canvas'));
+                } else if (window.AniHub.exportModal) {
                     window.AniHub.exportModal.open({
                         context: 'ranker',
                         defaultTab: 'png',
@@ -459,7 +414,7 @@ window.AniHub.views = window.AniHub.views || {};
                                 ` : ''}
                             </div>
                             <div class="flex items-center gap-2 font-mono text-[10px] text-text-muted mt-0.5">
-                                <span>${item.format || item.type || 'Anime'}</span>
+                                <span>${(item.type === 'CHARACTER' && item.seriesTitle) ? item.seriesTitle : (item.format || item.type || 'Anime')}</span>
                                 ${item.year ? `<span>• ${item.year}</span>` : ''}
                                 ${item.score ? `<span class="text-accent font-semibold">★ ${item.score}%</span>` : ''}
                             </div>

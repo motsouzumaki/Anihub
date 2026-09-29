@@ -96,57 +96,42 @@ window.AniHub.views = window.AniHub.views || {};
         const state = window.AniHub.state;
 
         container.innerHTML = `
-            <div class="py-6 max-w-7xl mx-auto px-4 md:px-6 space-y-6 animate-fade-in">
-                <!-- Top Toolbar -->
-                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-surface px-4 py-3.5 rounded-lg border border-border">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-md bg-bg border border-border text-accent flex items-center justify-center text-xs shrink-0">
-                            <i class="fas fa-th-large"></i>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <h1 class="text-base sm:text-lg font-bold text-text-primary tracking-tight">AniTierlist Workspace</h1>
-                                <span id="tierlist-count-badge" class="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-bg border border-border text-accent">
-                                    0 Placed • 0 Unranked
-                                </span>
-                            </div>
-                            <p class="text-xs text-text-muted">Custom S-to-F Tiers, Staging Pool & Export Studio</p>
-                        </div>
+            <div class="py-6 max-w-7xl mx-auto px-4 md:px-6 space-y-4 animate-fade-in">
+                <!-- Top Workspace Panel Container -->
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-surface px-4 py-4 rounded-lg border border-border">
+                    <!-- Left: Placed & Unranked Counter Badge -->
+                    <div class="flex items-center">
+                        <span id="tierlist-count-badge" class="font-mono text-xs font-semibold px-3 py-1 rounded-md bg-bg border border-border text-accent shadow-xs">
+                            0 Placed • 0 Unranked
+                        </span>
                     </div>
 
                     <!-- Global Actions Toolbar -->
                     <div class="flex flex-wrap items-center gap-2">
-                        <button id="btn-open-tier-settings" class="h-8 px-3 rounded-md bg-surface hover:bg-surface-hover border border-border text-text-primary text-xs font-medium transition-colors flex items-center gap-1.5">
+                        <button id="btn-open-tier-settings" class="h-8 px-3 rounded-md bg-surface hover:bg-surface-hover border border-border text-text-primary text-xs font-medium transition-colors flex items-center gap-1.5 shadow-xs">
                             <i class="fas fa-sliders-h text-accent text-xs"></i>
                             <span>Customize Tiers</span>
                         </button>
-                        <button id="btn-add-quick-tier" class="h-8 px-2.5 rounded-md bg-surface hover:bg-surface-hover border border-border text-text-muted hover:text-text-primary text-xs font-medium transition-colors flex items-center gap-1" title="Add Tier at Bottom">
+                        <button id="btn-add-quick-tier" class="h-8 px-2.5 rounded-md bg-surface hover:bg-surface-hover border border-border text-text-muted hover:text-text-primary text-xs font-medium transition-colors flex items-center gap-1 shadow-xs" title="Add Tier at Bottom">
                             <i class="fas fa-plus text-[10px]"></i>
                             <span>Add Tier</span>
                         </button>
-                        <button id="btn-reset-to-pool" class="h-8 px-2.5 rounded-md bg-surface hover:bg-surface-hover border border-border text-text-muted hover:text-amber-400 text-xs font-medium transition-colors flex items-center gap-1" title="Move all placed items back to pool">
+                        <button id="btn-reset-to-pool" class="h-8 px-2.5 rounded-md bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold text-xs transition-colors flex items-center gap-1 shadow-xs" title="Move all placed items back to pool">
                             <i class="fas fa-undo-alt text-[10px]"></i>
                             <span>Reset to Pool</span>
                         </button>
-                        <label class="h-8 px-2.5 rounded-md bg-surface hover:bg-surface-hover border border-border text-text-primary text-xs font-medium flex items-center gap-1.5 cursor-pointer select-none transition-colors" title="Toggle titles visibility on cards">
+                        <label class="h-8 px-2.5 rounded-md bg-surface hover:bg-surface-hover border border-border text-text-primary text-xs font-medium flex items-center gap-1.5 cursor-pointer select-none transition-colors shadow-xs" title="Toggle titles visibility on cards">
                             <input type="checkbox" id="toggle-tier-titles" ${showTierTitles ? 'checked' : ''} class="rounded border-border text-accent focus:ring-0">
                             <span>Show Titles</span>
                         </label>
-                        <button id="btn-copy-tier-text" class="h-8 w-8 rounded-md bg-surface hover:bg-surface-hover border border-border text-text-muted hover:text-text-primary text-xs flex items-center justify-center transition-colors" title="Copy Tierlist Text to Clipboard">
-                            <i class="fas fa-copy"></i>
-                        </button>
-                        <button id="btn-open-tier-export" class="h-8 px-3 rounded-md bg-surface hover:bg-surface-hover border border-border text-text-primary text-xs font-medium transition-colors flex items-center gap-1.5" title="Export PNG, Text, JSON Backup & Share Link">
+                        <button id="btn-open-tier-export" class="h-8 px-3 rounded-md bg-accent hover:bg-accent-hover text-accent-fg text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs" title="Export PNG, Text, JSON Backup & Share Link">
                             <i class="fas fa-file-export text-xs"></i>
                             <span>Export</span>
                         </button>
-                        <button id="btn-download-tier-png" class="h-8 px-3.5 rounded-md bg-accent hover:bg-accent-hover text-accent-fg text-xs font-semibold transition-colors flex items-center gap-1.5">
+                        <button id="btn-download-tier-png" class="h-8 px-3.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs">
                             <i class="fas fa-download text-xs"></i>
                             <span>Save PNG</span>
                         </button>
-                        <a href="#/ranker" class="h-8 px-3 rounded-md bg-surface hover:bg-surface-hover border border-border text-text-primary text-xs font-medium transition-colors flex items-center gap-1.5">
-                            <i class="fas fa-list-ol text-xs text-text-muted"></i>
-                            <span class="hidden sm:inline">AniRanker</span>
-                        </a>
                     </div>
                 </div>
 
@@ -285,31 +270,7 @@ window.AniHub.views = window.AniHub.views || {};
             });
         }
 
-        // Event: Copy Tierlist Text
-        const btnCopyText = container.querySelector('#btn-copy-tier-text');
-        if (btnCopyText) {
-            btnCopyText.addEventListener('click', () => {
-                const tiers = state.tierlistTiers || [];
-                if (tiers.length === 0) return;
-                let text = '=== AniTierlist Hierarchy ===\n\n';
-                tiers.forEach(t => {
-                    text += `[${t.name}]\n`;
-                    if (t.items && t.items.length > 0) {
-                        t.items.forEach(i => {
-                            text += `  • ${i.title}\n`;
-                        });
-                    } else {
-                        text += `  (Empty)\n`;
-                    }
-                    text += '\n';
-                });
-                navigator.clipboard.writeText(text).then(() => {
-                    if (window.AniHub.toast) window.AniHub.toast.success('Tierlist copied to clipboard!');
-                }).catch(() => {
-                    if (window.AniHub.toast) window.AniHub.toast.error('Failed to copy text');
-                });
-            });
-        }
+        // Open Unified Export & Share Studio
 
         // Open Unified Export & Share Studio
         const btnOpenExport = container.querySelector('#btn-open-tier-export');
@@ -325,11 +286,13 @@ window.AniHub.views = window.AniHub.views || {};
             });
         }
 
-        // Event: Download PNG via Unified Export Modal
+        // Event: Direct Download PNG without opening modal window
         const btnDownloadPng = container.querySelector('#btn-download-tier-png');
         if (btnDownloadPng) {
             btnDownloadPng.addEventListener('click', () => {
-                if (window.AniHub.exportModal) {
+                if (window.AniHub.exportModal?.directDownloadPng) {
+                    window.AniHub.exportModal.directDownloadPng('tierlist', container.querySelector('#tierlist-capture-area'));
+                } else if (window.AniHub.exportModal) {
                     window.AniHub.exportModal.open({
                         context: 'tierlist',
                         defaultTab: 'png',
