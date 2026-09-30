@@ -675,9 +675,26 @@ window.AniHub.views = window.AniHub.views || {};
 
         // Shared touch reordering logic
         function setupTouchReorder(element, containerEl, selector) {
+            function cleanupTouchState() {
+                clearTimeout(touchTimer);
+                touchTimer = null;
+                isTouchReordering = false;
+                if (touchActiveEl) {
+                    touchActiveEl.classList.remove('drag-placeholder');
+                    touchActiveEl = null;
+                }
+                if (touchAvatar) {
+                    touchAvatar.remove();
+                    touchAvatar = null;
+                }
+                // Purge any orphaned drag avatars in DOM
+                document.querySelectorAll('.drag-avatar').forEach(el => el.remove());
+                containerEl.querySelectorAll(selector).forEach(t => t.classList.remove('grid-drag-over'));
+            }
+
             element.addEventListener('touchstart', (e) => {
                 if (e.touches.length > 1) return;
-                clearTimeout(touchTimer);
+                cleanupTouchState();
                 const touch = e.touches[0];
                 touchStartIndex = parseInt(element.dataset.idx, 10);
 
@@ -688,12 +705,18 @@ window.AniHub.views = window.AniHub.views || {};
 
                     if (navigator.vibrate) navigator.vibrate(40);
 
+                    // Purge any stale avatars before creating new
+                    document.querySelectorAll('.drag-avatar').forEach(el => el.remove());
+
                     touchAvatar = element.cloneNode(true);
-                    touchAvatar.className = 'drag-avatar p-2 rounded-md bg-surface border border-accent shadow-2xl flex items-center gap-3 w-36 aspect-[2/3] overflow-hidden pointer-events-none fixed z-[9999]';
-                    touchAvatar.style.left = `${touch.clientX - 40}px`;
-                    touchAvatar.style.top = `${touch.clientY - 40}px`;
+                    touchAvatar.className = 'drag-avatar rounded-md bg-surface border-2 border-accent shadow-2xl aspect-[2/3] overflow-hidden pointer-events-none fixed z-[9999] opacity-90';
+                    const rect = element.getBoundingClientRect();
+                    touchAvatar.style.width = `${rect.width}px`;
+                    touchAvatar.style.height = `${rect.height}px`;
+                    touchAvatar.style.left = `${touch.clientX - (rect.width / 2)}px`;
+                    touchAvatar.style.top = `${touch.clientY - (rect.height / 2)}px`;
                     document.body.appendChild(touchAvatar);
-                }, 300);
+                }, 280);
             }, { passive: true });
 
             element.addEventListener('touchmove', (e) => {
@@ -705,8 +728,10 @@ window.AniHub.views = window.AniHub.views || {};
                 const touch = e.touches[0];
 
                 if (touchAvatar) {
-                    touchAvatar.style.left = `${touch.clientX - 40}px`;
-                    touchAvatar.style.top = `${touch.clientY - 40}px`;
+                    const avatarW = touchAvatar.offsetWidth || 100;
+                    const avatarH = touchAvatar.offsetHeight || 150;
+                    touchAvatar.style.left = `${touch.clientX - (avatarW / 2)}px`;
+                    touchAvatar.style.top = `${touch.clientY - (avatarH / 2)}px`;
                 }
 
                 const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -718,39 +743,39 @@ window.AniHub.views = window.AniHub.views || {};
                 }
             }, { passive: false });
 
-            element.addEventListener('touchend', (e) => {
+            const finishTouch = (e) => {
                 clearTimeout(touchTimer);
                 if (isTouchReordering) {
-                    isTouchReordering = false;
-                    element.classList.remove('drag-placeholder');
+                    const lastTouch = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
+                    let targetIdx = null;
 
-                    if (touchAvatar) {
-                        touchAvatar.remove();
-                        touchAvatar = null;
-                    }
-
-                    const lastTouch = e.changedTouches[0];
-                    const dropTarget = document.elementFromPoint(lastTouch.clientX, lastTouch.clientY);
-                    containerEl.querySelectorAll(selector).forEach(t => t.classList.remove('grid-drag-over'));
-
-                    if (dropTarget) {
-                        const targetTile = dropTarget.closest(selector);
-                        if (targetTile && targetTile !== touchActiveEl) {
-                            const targetIdx = parseInt(targetTile.dataset.idx, 10);
-                            const sourceIdx = parseInt(touchActiveEl.dataset.idx, 10);
-
-                            if (!isNaN(targetIdx) && !isNaN(sourceIdx) && targetIdx !== sourceIdx) {
-                                const copy = [...state.rankerItems];
-                                const [moved] = copy.splice(sourceIdx, 1);
-                                copy.splice(targetIdx, 0, moved);
-                                state.setRankerItems(copy);
+                    if (lastTouch) {
+                        const dropTarget = document.elementFromPoint(lastTouch.clientX, lastTouch.clientY);
+                        if (dropTarget) {
+                            const targetTile = dropTarget.closest(selector);
+                            if (targetTile && targetTile !== touchActiveEl) {
+                                targetIdx = parseInt(targetTile.dataset.idx, 10);
                             }
                         }
                     }
 
-                    touchActiveEl = null;
+                    const sourceIdx = touchActiveEl ? parseInt(touchActiveEl.dataset.idx, 10) : null;
+
+                    cleanupTouchState();
+
+                    if (targetIdx !== null && sourceIdx !== null && !isNaN(targetIdx) && !isNaN(sourceIdx) && targetIdx !== sourceIdx) {
+                        const copy = [...state.rankerItems];
+                        const [moved] = copy.splice(sourceIdx, 1);
+                        copy.splice(targetIdx, 0, moved);
+                        state.setRankerItems(copy);
+                    }
+                } else {
+                    cleanupTouchState();
                 }
-            });
+            };
+
+            element.addEventListener('touchend', finishTouch);
+            element.addEventListener('touchcancel', cleanupTouchState);
         }
 
         // Shared item manipulation actions

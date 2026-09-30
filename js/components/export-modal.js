@@ -684,6 +684,26 @@ window.AniHub.components = window.AniHub.components || {};
                 targetEl.appendChild(watermarkEl);
             }
 
+            // Handle Tierlist title bar clean rendering during capture
+            const titleBar = targetEl.querySelector('#tierlist-header-bar');
+            const titleInput = targetEl.querySelector('#tier-hierarchy-input');
+            const titleRender = targetEl.querySelector('#tier-hierarchy-title-render');
+            let excludedEmptyTitleBar = false;
+
+            if (titleInput) {
+                const currentTitle = titleInput.value.trim();
+                if (!currentTitle) {
+                    if (titleBar) {
+                        titleBar.classList.add('capture-exclude');
+                        excludedEmptyTitleBar = true;
+                    }
+                } else if (titleRender) {
+                    titleRender.textContent = currentTitle;
+                    titleRender.classList.remove('hidden');
+                }
+            }
+
+            targetEl.classList.add('anihub-capturing');
             updateProgress('<i class="fas fa-magic mr-1.5"></i>Synthesizing High-DPI Lossless Canvas...', 75);
             await new Promise(r => setTimeout(r, 150)); // layout sync
 
@@ -692,9 +712,13 @@ window.AniHub.components = window.AniHub.components || {};
                 scale: scaleVal,
                 useCORS: true,
                 allowTaint: false,
-                logging: false
+                logging: false,
+                ignoreElements: (el) => {
+                    return el.classList && (el.classList.contains('capture-exclude') || el.classList.contains('fa-edit'));
+                }
             });
 
+            targetEl.classList.remove('anihub-capturing');
             updateProgress('<i class="fas fa-check mr-1.5"></i>Export finalized!', 100);
 
             if (copyToClipboard && navigator.clipboard && window.ClipboardItem) {
@@ -728,6 +752,12 @@ window.AniHub.components = window.AniHub.components || {};
             console.error('PNG Render Error:', err);
             if (window.AniHub.toast) window.AniHub.toast.error('PNG Render failed. Check console for details.');
         } finally {
+            if (excludedEmptyTitleBar && titleBar) {
+                titleBar.classList.remove('capture-exclude');
+            }
+            if (titleRender) {
+                titleRender.classList.add('hidden');
+            }
             // Restore images and clean up watermark
             originalSources.forEach(({ img, src }) => {
                 img.src = src;
@@ -1206,18 +1236,96 @@ window.AniHub.components = window.AniHub.components || {};
         }
 
         const filenamePrefix = (filename || `anihub-${context}`).trim();
-        const toastId = window.AniHub.toast ? window.AniHub.toast.info('Synthesizing PNG graphic, please wait...') : null;
+
+        // Dismiss all prior instances safely
+        document.querySelectorAll('#anihub-direct-download-progress').forEach(el => el.remove());
+
+        // Create sleek floating progress indicator overlay for direct download
+        const progressOverlay = document.createElement('div');
+        progressOverlay.id = 'anihub-direct-download-progress';
+        progressOverlay.className = 'fixed bottom-6 right-6 z-[9999] bg-surface/95 backdrop-blur-md border border-border rounded-lg shadow-2xl p-3.5 w-80 space-y-2 text-xs pointer-events-auto select-none';
+        progressOverlay.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+        progressOverlay.style.opacity = '1';
+        progressOverlay.style.transform = 'translateY(0)';
+        document.body.appendChild(progressOverlay);
+
+        const updateDirectProgress = (msg, percent) => {
+            const isDone = percent >= 100;
+            const iconHtml = isDone 
+                ? '<i class="fas fa-check-circle text-emerald-400 text-xs"></i>' 
+                : '<i class="fas fa-circle-notch fa-spin text-accent text-xs"></i>';
+            const textClass = isDone ? 'text-emerald-400' : 'text-accent';
+
+            progressOverlay.innerHTML = `
+                <div class="flex items-center justify-between font-mono font-bold text-xs">
+                    <span class="flex items-center gap-1.5 ${textClass}">${iconHtml}<span>${msg}</span></span>
+                    <div class="flex items-center gap-2">
+                        <span class="${textClass}">${percent}%</span>
+                        <button type="button" class="text-text-muted hover:text-text-primary px-1 py-0.5 rounded transition-colors text-xs" title="Dismiss" onclick="document.querySelectorAll('#anihub-direct-download-progress').forEach(e=>e.remove())">
+                            <i class="fas fa-times text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-bg overflow-hidden border border-border">
+                    <div class="h-full bg-emerald-500 transition-all duration-150 rounded-full" style="width: ${percent}%;"></div>
+                </div>
+            `;
+        };
+
+        const dismissOverlay = (delay = 800) => {
+            setTimeout(() => {
+                const overlays = document.querySelectorAll('#anihub-direct-download-progress');
+                overlays.forEach(el => {
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(8px)';
+                    setTimeout(() => {
+                        try { el.remove(); } catch (_) {}
+                    }, 250);
+                });
+            }, delay);
+        };
 
         const originalSources = [];
+        let excludedEmptyTitleBar = false;
+        let titleBar = null;
+        let titleRender = null;
+
         try {
+            updateDirectProgress('Preparing media assets...', 10);
+            targetEl.classList.add('anihub-capturing');
+
             const imgEls = targetEl.querySelectorAll('img');
-            for (let i = 0; i < imgEls.length; i++) {
+            const totalImgs = imgEls.length;
+            for (let i = 0; i < totalImgs; i++) {
                 const img = imgEls[i];
                 originalSources.push({ img, src: img.src });
+
+                const pct = Math.round(10 + ((i + 1) / (totalImgs || 1)) * 60);
+                updateDirectProgress(`Rasterizing asset ${i + 1} of ${totalImgs}...`, pct);
+
                 const dataUrl = await convertImageToDataURL(img.src);
                 if (dataUrl) img.src = dataUrl;
             }
 
+            // Handle Tierlist title bar clean rendering during capture
+            titleBar = targetEl.querySelector('#tierlist-header-bar');
+            const titleInput = targetEl.querySelector('#tier-hierarchy-input');
+            titleRender = targetEl.querySelector('#tier-hierarchy-title-render');
+
+            if (titleInput) {
+                const currentTitle = titleInput.value.trim();
+                if (!currentTitle) {
+                    if (titleBar) {
+                        titleBar.classList.add('capture-exclude');
+                        excludedEmptyTitleBar = true;
+                    }
+                } else if (titleRender) {
+                    titleRender.textContent = currentTitle;
+                    titleRender.classList.remove('hidden');
+                }
+            }
+
+            updateDirectProgress('Synthesizing High-DPI PNG graphic...', 85);
             await new Promise(r => setTimeout(r, 120));
 
             const canvas = await html2canvas(targetEl, {
@@ -1225,22 +1333,51 @@ window.AniHub.components = window.AniHub.components || {};
                 scale: 2,
                 useCORS: true,
                 allowTaint: false,
-                logging: false
+                logging: false,
+                ignoreElements: (el) => {
+                    return el.classList && (el.classList.contains('capture-exclude') || el.classList.contains('fa-edit'));
+                }
             });
 
-            const link = document.createElement('a');
-            link.download = `${filenamePrefix}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+            updateDirectProgress('Finalizing image file...', 98);
 
+            await new Promise((resolve) => {
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const blobUrl = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.download = `${filenamePrefix}.png`;
+                        link.href = blobUrl;
+                        document.body.appendChild(link);
+                        link.click();
+                        setTimeout(() => {
+                            try { link.remove(); } catch (_) {}
+                            URL.revokeObjectURL(blobUrl);
+                        }, 1000);
+                    }
+                    resolve();
+                }, 'image/png');
+            });
+
+            updateDirectProgress('Download complete!', 100);
             if (window.AniHub.toast) window.AniHub.toast.success(`Downloaded ${filenamePrefix}.png!`);
+            dismissOverlay(1000);
         } catch (err) {
             console.error('Direct PNG download error:', err);
             if (window.AniHub.toast) window.AniHub.toast.error('Failed to generate PNG.');
+            dismissOverlay(1500);
         } finally {
+            if (excludedEmptyTitleBar && titleBar) {
+                titleBar.classList.remove('capture-exclude');
+            }
+            if (titleRender) {
+                titleRender.classList.add('hidden');
+            }
+            targetEl.classList.remove('anihub-capturing');
             originalSources.forEach(({ img, src }) => {
                 img.src = src;
             });
+            dismissOverlay(1200);
         }
     }
 

@@ -138,12 +138,21 @@ window.AniHub.views = window.AniHub.views || {};
                 <!-- Tiers Matrix Board (Target for PNG capture) -->
                 <div class="space-y-4">
                     <div id="tierlist-capture-area" class="p-4 sm:p-5 rounded-lg bg-surface border border-border ${showTierTitles ? '' : 'hide-titles'}">
-                        <div class="flex items-center justify-between pb-3 mb-3 border-b border-border">
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-accent"></span>
-                                <h2 class="text-xs font-bold text-text-primary uppercase font-mono tracking-wider">Tier Hierarchy</h2>
+                        <div id="tierlist-header-bar" class="flex items-center justify-between pb-3 mb-3 border-b border-border">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-2 h-2 rounded-full bg-accent shrink-0"></span>
+                                <div class="flex items-center gap-2">
+                                    <input type="text"
+                                           id="tier-hierarchy-input"
+                                           placeholder="Add title..."
+                                           class="text-xs sm:text-sm font-bold text-text-primary bg-transparent border-0 border-b border-transparent hover:border-border/60 focus:border-accent px-1 py-0.5 rounded transition-all focus:outline-none placeholder:text-text-muted/40 placeholder:font-normal w-48 sm:w-72 capture-exclude"
+                                           maxlength="70"
+                                           spellcheck="false"
+                                           autocomplete="off">
+                                    <span id="tier-hierarchy-title-render" class="hidden text-xs sm:text-sm font-bold text-text-primary tracking-wide"></span>
+                                </div>
                             </div>
-                            <span class="font-mono text-[11px] text-text-muted">Drag cards directly between tiers & pool</span>
+                            <span class="font-mono text-[11px] text-text-muted capture-exclude">Drag cards directly between tiers & pool</span>
                         </div>
 
                         <!-- Dynamic Tier Rows Container -->
@@ -248,6 +257,38 @@ window.AniHub.views = window.AniHub.views || {};
             });
         }
 
+        // Tier Hierarchy Board Title (Editable & Persistent, Empty by default)
+        const hierarchyTitleInput = container.querySelector('#tier-hierarchy-input');
+        const hierarchyTitleRender = container.querySelector('#tier-hierarchy-title-render');
+        if (hierarchyTitleInput) {
+            const savedTitle = localStorage.getItem('anihub_tier_title');
+            if (savedTitle && savedTitle.trim() && savedTitle.trim().toLowerCase() !== 'untitled tierlist') {
+                hierarchyTitleInput.value = savedTitle.trim();
+                if (hierarchyTitleRender) hierarchyTitleRender.textContent = savedTitle.trim();
+            } else {
+                hierarchyTitleInput.value = '';
+                if (hierarchyTitleRender) hierarchyTitleRender.textContent = '';
+                localStorage.removeItem('anihub_tier_title');
+            }
+
+            hierarchyTitleInput.addEventListener('input', () => {
+                const text = hierarchyTitleInput.value.trim();
+                if (hierarchyTitleRender) hierarchyTitleRender.textContent = text;
+                if (text) {
+                    localStorage.setItem('anihub_tier_title', text);
+                } else {
+                    localStorage.removeItem('anihub_tier_title');
+                }
+            });
+
+            hierarchyTitleInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    hierarchyTitleInput.blur();
+                }
+            });
+        }
+
         // Event: Clear Pool
         const btnClearPool = container.querySelector('#btn-clear-pool');
         if (btnClearPool) {
@@ -338,23 +379,24 @@ window.AniHub.views = window.AniHub.views || {};
             }
 
             tiersContainer.innerHTML = tiers.map((tier, tIdx) => `
-                <div class="box rounded-md border border-border overflow-hidden flex group/row transition-colors" data-tier-idx="${tIdx}">
-                    <!-- Tier Label & Inline Controls -->
-                    <div class="name w-20 sm:w-24 shrink-0 flex flex-col items-center justify-center p-2 relative select-none border-r border-border" style="background-color: ${tier.color};">
-                        <span class="font-bold text-sm sm:text-base text-slate-900 leading-tight text-center break-words tier-label-text cursor-pointer" title="Double click to rename" contenteditable="true" spellcheck="false" data-tier-idx="${tIdx}">
+                <div class="box rounded-md border border-border overflow-hidden flex group/row transition-all relative" data-tier-idx="${tIdx}">
+                    <!-- Tier Label Header -->
+                    <div class="name w-24 sm:w-28 shrink-0 flex items-center justify-center p-3 relative select-none" style="background-color: ${tier.color};">
+                        <span class="font-extrabold text-base sm:text-lg text-slate-950 tracking-tight leading-tight text-center break-words tier-label-text cursor-pointer select-none drop-shadow-xs" title="Click to rename" contenteditable="true" spellcheck="false" data-tier-idx="${tIdx}">
                             ${tier.name}
                         </span>
                         
-                        <!-- Row Quick Buttons -->
-                        <div class="flex items-center gap-1 mt-1 opacity-0 group-hover/row:opacity-100 transition-opacity bg-black/60 px-1 py-0.5 rounded-sm">
-                            <button class="btn-tier-row-up text-white hover:text-amber-200 text-[9px] p-0.5" data-idx="${tIdx}" title="Move Tier Up">
+                        <!-- Floating Glass Action Bar (Visible on Hover) -->
+                        <div class="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex items-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-all duration-150 bg-slate-950/80 backdrop-blur-md px-1.5 py-0.5 rounded-full shadow-lg border border-white/10 scale-90 group-hover/row:scale-100 pointer-events-auto">
+                            <button class="btn-tier-row-up text-slate-300 hover:text-white hover:bg-white/10 rounded-full w-5 h-5 flex items-center justify-center text-[9px] transition-colors" data-idx="${tIdx}" title="Move Tier Up">
                                 <i class="fas fa-chevron-up"></i>
                             </button>
-                            <button class="btn-tier-row-down text-white hover:text-amber-200 text-[9px] p-0.5" data-idx="${tIdx}" title="Move Tier Down">
+                            <button class="btn-tier-row-down text-slate-300 hover:text-white hover:bg-white/10 rounded-full w-5 h-5 flex items-center justify-center text-[9px] transition-colors" data-idx="${tIdx}" title="Move Tier Down">
                                 <i class="fas fa-chevron-down"></i>
                             </button>
-                            <button class="btn-tier-row-clear text-white hover:text-rose-300 text-[9px] p-0.5" data-idx="${tIdx}" title="Clear all items in this tier">
-                                <i class="fas fa-eraser"></i>
+                            <div class="w-px h-2.5 bg-white/20 mx-0.5"></div>
+                            <button class="btn-tier-row-clear text-slate-300 hover:text-rose-400 hover:bg-rose-500/10 rounded-full w-5 h-5 flex items-center justify-center text-[9px] transition-colors" data-idx="${tIdx}" title="Clear all items in this tier">
+                                <i class="fas fa-trash-alt"></i>
                             </button>
                         </div>
                     </div>
@@ -675,9 +717,25 @@ window.AniHub.views = window.AniHub.views || {};
 
         // Touch Drag Helper for Mobile Devices
         function setupTouchDrag(element, item, source) {
+            function cleanupTouchState() {
+                clearTimeout(touchTimer);
+                touchTimer = null;
+                isTouchDragging = false;
+                element.classList.remove('drag-placeholder');
+                if (touchAvatar) {
+                    touchAvatar.remove();
+                    touchAvatar = null;
+                }
+                document.querySelectorAll('.drag-avatar').forEach(el => el.remove());
+                document.querySelectorAll('.box').forEach(b => b.classList.remove('tier-drag-hover'));
+                if (poolDropzone) poolDropzone.classList.remove('tier-drag-hover');
+                touchItem = null;
+                touchSource = null;
+            }
+
             element.addEventListener('touchstart', (e) => {
                 if (e.touches.length > 1) return;
-                clearTimeout(touchTimer);
+                cleanupTouchState();
                 const touch = e.touches[0];
                 touchItem = item;
                 touchSource = source;
@@ -688,12 +746,15 @@ window.AniHub.views = window.AniHub.views || {};
 
                     if (navigator.vibrate) navigator.vibrate(40);
 
+                    // Purge any stale avatars before creating new
+                    document.querySelectorAll('.drag-avatar').forEach(el => el.remove());
+
                     touchAvatar = element.cloneNode(true);
-                    touchAvatar.className = 'drag-avatar w-16 h-24 rounded-sm aspect-[2/3] overflow-hidden shadow-2xl border border-accent pointer-events-none fixed z-[9999]';
+                    touchAvatar.className = 'drag-avatar w-16 h-24 rounded-sm aspect-[2/3] overflow-hidden shadow-2xl border-2 border-accent pointer-events-none fixed z-[9999] opacity-90';
                     touchAvatar.style.left = `${touch.clientX - 32}px`;
                     touchAvatar.style.top = `${touch.clientY - 48}px`;
                     document.body.appendChild(touchAvatar);
-                }, 350);
+                }, 280);
             }, { passive: true });
 
             element.addEventListener('touchmove', (e) => {
@@ -724,22 +785,19 @@ window.AniHub.views = window.AniHub.views || {};
                 }
             }, { passive: false });
 
-            element.addEventListener('touchend', (e) => {
+            const finishTouch = (e) => {
                 clearTimeout(touchTimer);
                 if (isTouchDragging) {
-                    isTouchDragging = false;
-                    element.classList.remove('drag-placeholder');
+                    const currentItem = touchItem;
+                    const currentSource = touchSource;
+                    const lastTouch = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
+                    let dropTarget = null;
 
-                    if (touchAvatar) {
-                        touchAvatar.remove();
-                        touchAvatar = null;
+                    if (lastTouch) {
+                        dropTarget = document.elementFromPoint(lastTouch.clientX, lastTouch.clientY);
                     }
 
-                    const lastTouch = e.changedTouches[0];
-                    const dropTarget = document.elementFromPoint(lastTouch.clientX, lastTouch.clientY);
-
-                    document.querySelectorAll('.box').forEach(b => b.classList.remove('tier-drag-hover'));
-                    if (poolDropzone) poolDropzone.classList.remove('tier-drag-hover');
+                    cleanupTouchState();
 
                     if (dropTarget) {
                         const targetTierBox = dropTarget.closest('.box');
@@ -747,16 +805,18 @@ window.AniHub.views = window.AniHub.views || {};
 
                         if (targetTierBox) {
                             const destTierIdx = parseInt(targetTierBox.dataset.tierIdx, 10);
-                            executeMove(touchItem, touchSource, { destination: 'tier', tierIndex: destTierIdx });
+                            executeMove(currentItem, currentSource, { destination: 'tier', tierIndex: destTierIdx });
                         } else if (targetPool) {
-                            executeMove(touchItem, touchSource, { destination: 'pool' });
+                            executeMove(currentItem, currentSource, { destination: 'pool' });
                         }
                     }
-
-                    touchItem = null;
-                    touchSource = null;
+                } else {
+                    cleanupTouchState();
                 }
-            });
+            };
+
+            element.addEventListener('touchend', finishTouch);
+            element.addEventListener('touchcancel', cleanupTouchState);
         }
 
         function executeMove(item, source, target) {

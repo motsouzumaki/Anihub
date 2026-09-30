@@ -148,6 +148,20 @@ a, button, input, select, textarea, .interactive-item {
     box-shadow: none !important;
 }
 
+/* Touch Drag Avatar and Placeholder Fixes */
+.drag-avatar {
+    pointer-events: none !important;
+    touch-action: none !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    will-change: left, top;
+}
+
+.drag-placeholder {
+    opacity: 0.35 !important;
+    filter: grayscale(80%) !important;
+}
+
 .ranking-grid-tile:hover {
     border-color: var(--text-muted);
     transform: translateY(-2px);
@@ -199,36 +213,63 @@ a, button, input, select, textarea, .interactive-item {
     background-color: rgba(61, 180, 242, 0.06) !important;
 }
 
-/* Tier List Visuals */
 .box {
     display: flex;
-    min-height: 88px;
+    min-height: 96px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 6px;
     overflow: hidden;
-    transition: border-color 0.15s ease;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .box:hover {
-    border-color: var(--border);
+    border-color: rgba(61, 180, 242, 0.35);
 }
 
 .box .name {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 68px;
+    width: 96px;
     flex-shrink: 0;
-    color: #111625;
+    color: #0b111e;
     font-family: 'Inter', sans-serif;
     font-weight: 800;
-    font-size: 0.95rem;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
     text-align: center;
-    padding: 0 6px;
+    padding: 8px;
     word-break: break-word;
-    line-height: 1.2;
+    line-height: 1.15;
     user-select: none;
+    position: relative;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.12);
+}
+
+.tier-label-text:focus {
+    outline: 2px solid rgba(0, 0, 0, 0.6);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.25);
+    user-select: text;
+}
+
+
+
+/* Elements stripped & perfected during Canvas PNG synthesis */
+.anihub-capturing .capture-exclude,
+.anihub-capturing .fa-edit {
+    display: none !important;
+}
+
+.anihub-capturing .box {
+    border-radius: 4px !important;
+}
+
+.anihub-capturing .tier-dropzone {
+    align-items: flex-start !important;
+    align-content: flex-start !important;
 }
 
 .box .items {
